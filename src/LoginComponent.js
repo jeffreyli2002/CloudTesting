@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; 
 
 const LoginComponent = () => {
+    const navigate = useNavigate(); 
     const [loginCredentials, setLoginCredentials] = useState({ username: '', password: '' });
 
     const handleLoginChange = (e) => {
@@ -11,12 +13,10 @@ const LoginComponent = () => {
     const handleLoginSubmit = (e) => {
         e.preventDefault();
         console.log('Login Attempted:', loginCredentials);
-        // Add your login logic here
     };
 
     const handleCreateAccountClick = () => {
-        console.log('Create Account button clicked');
-        // Add your create account logic or navigation here
+        navigate('/new-user'); 
     };
 
     return (
