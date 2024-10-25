@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; 
 
 const NewUserFormatted = () => {
+    const navigate = useNavigate(); 
     const [inputValueUser, setInputValueUser] = useState('');
     const [inputValuePass, setInputValuePass] = useState('');
 
@@ -14,6 +16,10 @@ const NewUserFormatted = () => {
     };
     const handleChangePass = (e) => {
         setInputValuePass(e.target.value);
+    };
+
+    const signInPage = () => {
+        navigate('/'); 
     };
 
     return (
@@ -66,7 +72,7 @@ const NewUserFormatted = () => {
                     />
                 </div>
                 <div style={{ marginTop: '40px', fontSize: '.75rem' }}>
-                    Have an account? Sign in
+                    Have an account? <span onClick={signInPage} style={{ color: 'blue', cursor: 'pointer', textDecoration: 'underline'}}>Sign in</span>
                 </div></div>
 
         </div>
