@@ -13,7 +13,6 @@ const LoginComponent = () => {
     const handleLoginSubmit = (e) => {
         e.preventDefault();
         console.log('Login Attempted:', loginCredentials);
-        navigate('/projects');
     };
 
     const handleCreateAccountClick = () => {
