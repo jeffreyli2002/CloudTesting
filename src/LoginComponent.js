@@ -13,6 +13,7 @@ const LoginComponent = () => {
     const handleLoginSubmit = (e) => {
         e.preventDefault();
         console.log('Login Attempted:', loginCredentials);
+        navigate('/projects')
     };
 
     const handleCreateAccountClick = () => {
@@ -50,7 +51,7 @@ const LoginComponent = () => {
                             name="username"
                             value={loginCredentials.username}
                             onChange={handleLoginChange}
-                            style={{ width: '100%', padding: '8px', marginTop: '5px', borderRadius: '4px', border: '1px solid #ccc' }}
+                            style={{ width: '95%', padding: '8px', marginTop: '5px', borderRadius: '4px', border: '1px solid #ccc' }}
                         />
                     </div>
                     <div style={{ marginBottom: '15px' }}>
@@ -61,7 +62,7 @@ const LoginComponent = () => {
                             name="password"
                             value={loginCredentials.password}
                             onChange={handleLoginChange}
-                            style={{ width: '100%', padding: '8px', marginTop: '5px', borderRadius: '4px', border: '1px solid #ccc' }}
+                            style={{ width: '95%', padding: '8px', marginTop: '5px', borderRadius: '4px', border: '1px solid #ccc' }}
                         />
                     </div>
                     <button type="submit" style={{
