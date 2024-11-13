@@ -28,29 +28,48 @@ const Projects = () => {
         }
     };
 
+    
+
     const addProject = async () => {
         if (newProjectName.trim() === '' || newProjectId.trim() === '') {
             alert('Please enter both a project name and project ID.');
             return;
         }
-
+    
+        const userId = sessionStorage.getItem('userId') || 'default_user_id';
+    
         try {
-            const response = await axios.post('http://localhost:5000/create_project', {
+            const projectResponse = await axios.post('http://localhost:5000/create_project', {
+                userId: userId,
                 projectName: newProjectName,
                 projectId: newProjectId,
+                description: 'Some project description'  // Add if required by backend
             });
-
-            if (response.status === 200) {
+    
+            if (projectResponse.status === 200) {
                 alert('Project created successfully.');
-                setNewProjectName('');
-                setNewProjectId('');
-                fetchProjects(); // Refresh the list of projects
+    
+                // Update the user's project access
+                const userResponse = await axios.post('http://localhost:5000/join', {
+                    projectId: newProjectId,
+                    userId: userId,  // Ensure userId is sent
+                });
+    
+                if (userResponse.status === 200) {
+                    alert('User access updated successfully.');
+                    setNewProjectName('');
+                    setNewProjectId('');
+                    fetchProjects(); // Refresh project list on page
+                } else {
+                    alert('Failed to update user access.');
+                }
             }
         } catch (error) {
             console.error('Error adding project:', error);
-            alert('Failed to create project. Please try again.');
+            alert('Failed to create project or update user access. Please try again.');
         }
     };
+    
 
     const handleLogout = () => {
         navigate('/');
