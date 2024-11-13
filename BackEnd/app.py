@@ -2,7 +2,7 @@
 from flask import Flask, request, jsonify
 from pymongo import MongoClient
 from flask_cors import CORS  # Add this line
-
+import logging
 # Import custom modules for database interactions
 import usersDatabase as usersDB
 import projectsDatabase as projectsDB
@@ -21,7 +21,8 @@ def login():
     data = request.get_json()
     userId = data.get('userId')
     password = data.get('password')
-
+    print('userId: %s', userId)
+    print('password: %s', password)
     # Connect to MongoDB
     client = MongoClient(MONGODB_SERVER)
 
@@ -209,6 +210,26 @@ def check_in():
         return jsonify({'message': 'CHECK IN SUCCESS'}), 200  
     else:
         return jsonify({'message': 'CHECK IN FAIL'}), 400
+    
+
+logging.basicConfig(level=logging.INFO)
+
+@app.route('/get_user_projects', methods=['GET'])
+def get_user_projects():
+    logging.info('get_user_projects route triggered')
+    userId = request.args.get('userId')
+    print(f'userId: {userId}') # Print the value of userId to the console
+    if not userId:
+        return jsonify({'message': 'userId not provided.'}), 400
+
+    client = MongoClient(MONGODB_SERVER)
+    success, data = usersDB.get_evetyPRO_user_joining(client, userId)
+    client.close()
+
+    if success:
+        return jsonify({'joiningPJ': data}), 200
+    else:
+        return jsonify({'message': data}), 400
 
 # Main entry point for the application
 if __name__ == '__main__':

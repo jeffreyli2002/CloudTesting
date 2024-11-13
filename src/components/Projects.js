@@ -1,38 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Button, TextField } from '@mui/material';
+import ProjectNames from './ProjectNames'; // Assuming this component exists
+import { Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const Projects = () => {
+    const navigate = useNavigate();
     const [projects, setProjects] = useState([]);
-    const [newProjectName, setNewProjectName] = useState('');
-    const [newProjectId, setNewProjectId] = useState('');
 
     useEffect(() => {
-        fetchProjects();
+        fetchUserProjects();
     }, []);
 
-    const fetchProjects = async () => {
-        try {
-            const response = await axios.get('http://localhost:5000/get_project_info');
-            console.log('Fetched Projects:', response.data);  // Debugging line
-            if (response.status === 200 && response.data.projects) {
-                setProjects(response.data.projects);
-            } else {
-                setProjects([]); // Set to an empty array if there's no project data
-            }
-        } catch (error) {
-            console.error('Error fetching projects:', error);
-            setProjects([]); // Set to empty if there's an error fetching projects
-        }
-    };
-
-    const addProject = async () => {
-        if (newProjectName.trim() === '' || newProjectId.trim() === '') {
-            alert('Please enter both a project name and project ID.');
-            return;
-        }
-
-        const userId = sessionStorage.getItem('userId');
+    const fetchUserProjects = async () => {
+        const userId = sessionStorage.getItem('userId'); // Assume the user is logged in and has a userId in session
 
         if (!userId) {
             alert('User not logged in');
@@ -40,39 +21,34 @@ const Projects = () => {
         }
 
         try {
-            const projectResponse = await axios.post('http://localhost:5000/create_project', {
-                userId: userId,
-                projectName: newProjectName,
-                projectId: newProjectId,
-                description: 'Some project description'
-            });
-
-            if (projectResponse.status === 200) {
-                alert('Project created successfully.');
-
-                const userResponse = await axios.post('http://localhost:5000/join', {
-                    projectId: newProjectId,
-                    userId: userId
-                });
-
-                if (userResponse.status === 200) {
-                    alert('User access updated successfully.');
-                    setNewProjectName('');
-                    setNewProjectId('');
-                    fetchProjects(); // Refresh project list on page
-                } else {
-                    alert(userResponse.data.message);
-                }
+            const response = await axios.get(`http://localhost:5000/get_user_projects?userId=${userId}`);
+            console.log('Fetched User Projects:', response.data);
+            
+            if (response.status === 200 && response.data.joiningPJ) {
+                const fetchedProjects = response.data.joiningPJ.map((projectName) => ({
+                    name: projectName,
+                    isJoined: true,
+                }));
+                setProjects(fetchedProjects);
+            } else {
+                setProjects([]); // Set to an empty array if there's no project data
             }
         } catch (error) {
-            console.error('Error adding project:', error);
-            alert('Failed to create project or update user access. Please try again.');
+            console.error('Error fetching user projects:', error);
+            setProjects([]); // Set to empty if there's an error fetching projects
         }
     };
 
     const handleLogout = () => {
         sessionStorage.removeItem('userId'); // Clear userId from session storage on logout
-        window.location.href = '/'; // Redirect to home page or login page
+        navigate('/'); // Redirect to home page or login page
+    };
+
+    const addProject = () => {
+        const newProject = { name: `Project Name ${projects.length + 1}`, isJoined: false };
+        setProjects([...projects, newProject]);
+        console.log("Added project:", newProject);
+        console.log("Updated projects list:", projects);
     };
 
     return (
@@ -84,42 +60,22 @@ const Projects = () => {
                     padding: '20px',
                     borderRadius: '8px',
                     backgroundColor: '#f9f9f9',
-                    maxHeight: '300px',
-                    overflowY: 'auto',
+                    maxHeight: '500px', // Increase this value to make the scrollable area bigger
+                    overflowY: 'auto',   // Enable vertical scrolling
                 }}
             >
-                {projects.length > 0 ? (
-                    projects.map((project) => (
-                        <div key={project.projectId} style={{ borderBottom: '1px solid #ccc', marginBottom: '10px', paddingBottom: '10px' }}>
-                            <h2>{project.projectName}</h2>
-                            <p>{project.description}</p>
-                        </div>
-                    ))
-                ) : (
-                    <p>No projects available.</p>
-                )}
+                {projects.map((project, index) => (
+                    <ProjectNames key={index} projectName={project.name} isJoined={project.isJoined} />
+                ))}
             </div>
-
-            <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <TextField
-                    label="New Project Name"
-                    variant="outlined"
-                    value={newProjectName}
-                    onChange={(e) => setNewProjectName(e.target.value)}
-                    fullWidth
-                />
-                <TextField
-                    label="New Project ID"
-                    variant="outlined"
-                    value={newProjectId}
-                    onChange={(e) => setNewProjectId(e.target.value)}
-                    fullWidth
-                />
-                <Button variant="contained" onClick={addProject} color="primary">
-                    Add Project
-                </Button>
-            </div>
-
+            <Button
+                variant="contained"
+                onClick={addProject}
+                style={{ marginTop: '20px', width: '100%' }}
+                color="primary"
+            >
+                Add Project
+            </Button>
             <Button
                 variant="contained"
                 style={{

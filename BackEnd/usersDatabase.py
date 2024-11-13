@@ -132,7 +132,24 @@ def join_project(client, userId, projectId):
         else:
             logging.error('Failed to add project ID %s to user ID %s for an unknown reason', projectId, userId)
             return False, 'Failed to add project to user joiningPJ.'
-
+def get_evetyPRO_user_joining(client, userId):
+    try:
+        db = client[temp]
+        users = db['users']
+        
+        # Query the user by userId
+        user = users.find_one({'userId': userId})
+        
+        if user is None:
+            return False, 'User not found.'
+        
+        # Retrieve the 'joiningPJ' list; return empty list if not present
+        joining_projects = user.get('joiningPJ', [])
+        
+        return True, joining_projects
+    
+    except Exception as e:
+        return False, f'An error occurred: {str(e)}'
 
 
 
