@@ -65,31 +65,43 @@ def add_user():
 @app.route('/join', methods=['POST'])
 def join():
     data = request.get_json()
-    
-    # Log the incoming data for verification
     app.logger.info('Received data: %s', data)
     
     userId = data.get('userId')
     projectId = data.get('projectId')
 
-    # Check if required fields are present
+    # Log userId and projectId to the console
+    app.logger.info('userId: %s', userId)
+    app.logger.info('projectId: %s', projectId)
+
     if not userId or not projectId:
         app.logger.error('Missing userId or projectId')
-        return jsonify({'message': 'Missing userId or projectId'}), 400
+        return jsonify({'message': 'Missing userId or projectId'}), 400  # Bad Request
 
     client = MongoClient(MONGODB_SERVER)
     try:
         success, message = usersDB.join_project(client, userId, projectId)
+        app.logger.info('Join project result: %s, Message: %s', success, message)
     except Exception as e:
         app.logger.error('An error occurred: %s', str(e))
         client.close()
-        return jsonify({'message': 'An error occurred while updating the user project.'}), 500
+        return jsonify({'message': 'An error occurred while updating the user project.'}), 500  # Internal Server Error
     
     client.close()
     if success:
-        return jsonify({'message': message}), 200
+        return jsonify({'message': message}), 200  # OK
     else:
-        return jsonify({'message': message}), 400
+        if message == 'Project does not exist.':
+            return jsonify({'message': message}), 404  # Not Found
+        elif message == 'Project already added to user joiningPJ.':
+            return jsonify({'message': message}), 409  # Conflict
+        elif message == 'User does not exist.':
+            return jsonify({'message': message}), 404  # Not Found
+        else:
+            return jsonify({'message': message}), 400  # Bad Request
+
+
+
 
 
 # Route for creating a new project
@@ -120,25 +132,29 @@ def create_project():
 # Route for getting project information
 @app.route('/get_project_info', methods=['GET'])
 def get_project_info():
-    # Extract 'projectId' from query parameters
-    projectId = request.args.get('projectId')
-
     # Connect to MongoDB
     client = MongoClient(MONGODB_SERVER)
 
-    # Fetch project information using the projectsDB module
-    project = projectsDB.queryProject(client, projectId)
+    # Fetch all project information
+    projects = client.your_database.projects.find({})
+    project_list = []
+    for project in projects:
+        project_dict = {
+            'projectId': project['projectId'],
+            'projectName': project['projectName'],
+            'description': project.get('description', '')
+        }
+        project_list.append(project_dict)
 
     # Close the MongoDB connection
     client.close()
 
     # Return a JSON response
-    if project:
-        # Remove ObjectId from the response
-        project.pop('_id', None)
-        return jsonify({'project': project}), 200  
+    if project_list:
+        return jsonify({'projects': project_list}), 200
     else:
-        return jsonify({'message': 'Project not found.'}), 400
+        return jsonify({'message': 'No projects found.'}), 404
+
 
 # Route for checking out hardware
 @app.route('/check_out', methods=['POST'])

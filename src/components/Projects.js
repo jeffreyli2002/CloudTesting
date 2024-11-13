@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import ProjectNames from './ProjectNames';
 import { Button, TextField } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const Projects = () => {
-    const navigate = useNavigate();
     const [projects, setProjects] = useState([]);
     const [newProjectName, setNewProjectName] = useState('');
     const [newProjectId, setNewProjectId] = useState('');
@@ -17,6 +14,7 @@ const Projects = () => {
     const fetchProjects = async () => {
         try {
             const response = await axios.get('http://localhost:5000/get_project_info');
+            console.log('Fetched Projects:', response.data);  // Debugging line
             if (response.status === 200 && response.data.projects) {
                 setProjects(response.data.projects);
             } else {
@@ -34,7 +32,6 @@ const Projects = () => {
             return;
         }
 
-        // Retrieve the user ID from session storage
         const userId = sessionStorage.getItem('userId');
 
         if (!userId) {
@@ -43,21 +40,19 @@ const Projects = () => {
         }
 
         try {
-            // Step 1: Create the project in the projects database
             const projectResponse = await axios.post('http://localhost:5000/create_project', {
                 userId: userId,
                 projectName: newProjectName,
                 projectId: newProjectId,
+                description: 'Some project description'
             });
 
             if (projectResponse.status === 200) {
                 alert('Project created successfully.');
 
-                // Step 2: Update the user's project access in the users database
                 const userResponse = await axios.post('http://localhost:5000/join', {
-                    userId: userId,
                     projectId: newProjectId,
-                    
+                    userId: userId
                 });
 
                 if (userResponse.status === 200) {
@@ -77,7 +72,7 @@ const Projects = () => {
 
     const handleLogout = () => {
         sessionStorage.removeItem('userId'); // Clear userId from session storage on logout
-        navigate('/');
+        window.location.href = '/'; // Redirect to home page or login page
     };
 
     return (
@@ -95,7 +90,10 @@ const Projects = () => {
             >
                 {projects.length > 0 ? (
                     projects.map((project) => (
-                        <ProjectNames key={project.projectId} projectName={project.projectName} isJoined={false} />
+                        <div key={project.projectId} style={{ borderBottom: '1px solid #ccc', marginBottom: '10px', paddingBottom: '10px' }}>
+                            <h2>{project.projectName}</h2>
+                            <p>{project.description}</p>
+                        </div>
                     ))
                 ) : (
                     <p>No projects available.</p>

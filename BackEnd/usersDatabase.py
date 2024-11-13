@@ -1,4 +1,6 @@
 from pymongo import MongoClient
+import logging
+
 
 
 temp = 'User_DB'  # Replace with your actual database name
@@ -99,20 +101,39 @@ def join_project(client, userId, projectId):
     projects = db['projects']
     users = db['users']
 
-    # Check if the projectId exists or not
     existing_project = projects.find_one({'projectId': projectId})
     if not existing_project:
+        logging.error('Project ID %s does not exist', projectId)
         return False, 'Project does not exist.'
 
-    # Add the projectId to the user's joiningPJ array
-    result = users.update_one(
-        {'userId': userId},
-        {'$addToSet': {'joiningPJ': projectId}}
-    )
+    logging.info('Checking if project ID %s is already in user ID %s', projectId, userId)
+    user = users.find_one({'userId': userId})
 
-    if result.modified_count > 0:
-        return True, 'Project successfully added to user joiningPJ.'
+    if not user:
+        logging.error('User ID %s does not exist', userId)
+        return False, 'User does not exist.'
+    
+    if 'joiningPJ' not in user:
+        logging.info('User ID %s does not have joiningPJ array, initializing it', userId)
+        user['joiningPJ'] = []
+
+    if projectId in user['joiningPJ']:
+        logging.info('Project ID %s is already in the joiningPJ array of user ID %s', projectId, userId)
+        return False, 'Project already added to user joiningPJ.'
     else:
-        return False, 'Project was already in joiningPJ or failed to add.'
+        logging.info('Adding project ID %s to the joiningPJ array of user ID %s', projectId, userId)
+        result = users.update_one(
+            {'userId': userId},
+            {'$addToSet': {'joiningPJ': projectId}}
+        )
+        if result.modified_count > 0:
+            logging.info('Project ID %s successfully added to user ID %s', projectId, userId)
+            return True, 'Project successfully added to user joiningPJ.'
+        else:
+            logging.error('Failed to add project ID %s to user ID %s for an unknown reason', projectId, userId)
+            return False, 'Failed to add project to user joiningPJ.'
+
+
+
 
 
