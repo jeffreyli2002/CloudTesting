@@ -49,10 +49,9 @@ const Projects = () => {
             if (projectResponse.status === 200) {
                 alert('Project created successfully.');
     
-                // Update the user's project access
                 const userResponse = await axios.post('http://localhost:5000/join', {
                     projectId: newProjectId,
-                    userId: userId,  // Ensure userId is sent
+                    userId: userId,
                 });
     
                 if (userResponse.status === 200) {
@@ -61,7 +60,7 @@ const Projects = () => {
                     setNewProjectId('');
                     fetchProjects(); // Refresh project list on page
                 } else {
-                    alert('Failed to update user access.');
+                    alert(userResponse.data.message);
                 }
             }
         } catch (error) {
@@ -69,6 +68,7 @@ const Projects = () => {
             alert('Failed to create project or update user access. Please try again.');
         }
     };
+    
     
 
     const handleLogout = () => {

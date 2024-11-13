@@ -64,25 +64,33 @@ def add_user():
     
 @app.route('/join', methods=['POST'])
 def join():
-    # Extract data from request
     data = request.get_json()
+    
+    # Log the incoming data for verification
+    app.logger.info('Received data: %s', data)
+    
     userId = data.get('userId')
     projectId = data.get('projectId')
 
-    # Connect to MongoDB
+    # Check if required fields are present
+    if not userId or not projectId:
+        app.logger.error('Missing userId or projectId')
+        return jsonify({'message': 'Missing userId or projectId'}), 400
+
     client = MongoClient(MONGODB_SERVER)
-
-    # Attempt to add the user using the usersDB module
-    success, message = usersDB.join_project(client, userId, projectId)
-
-    # Close the MongoDB connection
+    try:
+        success, message = usersDB.join_project(client, userId, projectId)
+    except Exception as e:
+        app.logger.error('An error occurred: %s', str(e))
+        client.close()
+        return jsonify({'message': 'An error occurred while updating the user project.'}), 500
+    
     client.close()
-
-    # Return a JSON response
     if success:
-        return jsonify({'message': message}), 200  # Created
+        return jsonify({'message': message}), 200
     else:
-        return jsonify({'message': message}), 400 
+        return jsonify({'message': message}), 400
+
 
 # Route for creating a new project
 @app.route('/create_project', methods=['POST'])
