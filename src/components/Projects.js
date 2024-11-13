@@ -28,32 +28,38 @@ const Projects = () => {
         }
     };
 
-    
-
     const addProject = async () => {
         if (newProjectName.trim() === '' || newProjectId.trim() === '') {
             alert('Please enter both a project name and project ID.');
             return;
         }
-    
-        const userId = sessionStorage.getItem('userId') || 'default_user_id';
-    
+
+        // Retrieve the user ID from session storage
+        const userId = sessionStorage.getItem('userId');
+
+        if (!userId) {
+            alert('User not logged in');
+            return;
+        }
+
         try {
+            // Step 1: Create the project in the projects database
             const projectResponse = await axios.post('http://localhost:5000/create_project', {
                 userId: userId,
                 projectName: newProjectName,
                 projectId: newProjectId,
-                description: 'Some project description'  // Add if required by backend
             });
-    
+
             if (projectResponse.status === 200) {
                 alert('Project created successfully.');
-    
+
+                // Step 2: Update the user's project access in the users database
                 const userResponse = await axios.post('http://localhost:5000/join', {
-                    projectId: newProjectId,
                     userId: userId,
+                    projectId: newProjectId,
+                    
                 });
-    
+
                 if (userResponse.status === 200) {
                     alert('User access updated successfully.');
                     setNewProjectName('');
@@ -68,10 +74,9 @@ const Projects = () => {
             alert('Failed to create project or update user access. Please try again.');
         }
     };
-    
-    
 
     const handleLogout = () => {
+        sessionStorage.removeItem('userId'); // Clear userId from session storage on logout
         navigate('/');
     };
 

@@ -13,6 +13,7 @@ const LoginComponent = () => {
     const handleLoginSubmit = (e) => {
         e.preventDefault();
         console.log('Login Attempted:', loginCredentials);
+    
         // Send POST request to backend
         fetch('http://localhost:5000/login', {
             method: 'POST',
@@ -25,7 +26,8 @@ const LoginComponent = () => {
         .then(response => response.json().then(data => ({ status: response.status, body: data })))
         .then(res => {
             if (res.status === 200) {
-                // Login successful
+                // Login successful, store userId in session storage
+                sessionStorage.setItem('userId', loginCredentials.username);
                 console.log(res.body.message);
                 navigate('/projects');
             } else {
@@ -38,6 +40,7 @@ const LoginComponent = () => {
             alert('An error occurred during login.');
         });
     };
+    
 
     const handleCreateAccountClick = () => {
         navigate('/new-user'); 
