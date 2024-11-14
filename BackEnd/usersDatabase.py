@@ -7,30 +7,21 @@ temp = 'User_DB'  # Replace with your actual database name
 
 # Encryption and decryption functions
 def encrypt(inputText, N, D):
-    reversedText = inputText[::-1]
     encryptedText = ""
-
-    for c in reversedText:
-        new_0 = chr(ord(c) + N * D)
-        if 34 <= ord(new_0) <= 126:
-            encryptedText += new_0
-        else:
-            new_1 = chr((ord(new_0) % 127) + 34)
-            encryptedText += new_1
-    return encryptedText
+    for c in inputText:
+        new_char = chr(((ord(c) - 32 + N * D) % 95) + 32)
+        encryptedText += new_char
+    return encryptedText[::-1]
 
 def decrypt(encryptedText, N, D):
-    reversedText = encryptedText[::-1]
+    encryptedText = encryptedText[::-1]
     decryptedText = ""
-
-    for c in reversedText:
-        new_0 = chr(ord(c) - N * D)
-        if 34 <= ord(new_0) <= 126:
-            decryptedText += new_0
-        else:
-            new_1 = chr((ord(new_0) % 127) + 34)
-            decryptedText += new_1
+    for c in encryptedText:
+        new_char = chr(((ord(c) - 32 - N * D) % 95) + 32)
+        decryptedText += new_char
     return decryptedText
+
+
 
 '''
 Structure of User entry:
@@ -79,22 +70,21 @@ def __queryUser(client, userId):
 
 # Function to log in a user
 def login(client, userId, password):
-    # Authenticate a user and return login status
     user = __queryUser(client, userId)
     if user is None:
         return False, 'User not found.'
-
-    # Decrypt the stored password
+    
     encrypted_password = user['password']
-    N = 3
-    D = 2
-    decrypted_password = decrypt(encrypted_password, N, D)
-
-    # Compare the passwords
+    decrypted_password = decrypt(encrypted_password, 3, 2)
+    
+    print(f"Decrypted Password: {decrypted_password}, Provided Password: {password}")
+    
     if password == decrypted_password:
         return True, 'Login successful.'
     else:
         return False, 'Incorrect password.'
+
+
     
 def join_project(client, userId, projectId):
     db = client['User_DB']
