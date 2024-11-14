@@ -39,7 +39,36 @@ def login():
         return jsonify({'message': response}), 400
 
 
+@app.route('/get_hardware_availability', methods=['GET'])
+def get_hardware_availability():
+    projectId = request.args.get('projectId')
+    print(f"Received request for projectId: {projectId}")  # Debug log
 
+    if not projectId:
+        return jsonify({'message': 'Project ID not provided'}), 400
+
+    client = MongoClient(MONGODB_SERVER)
+    project = projectsDB.queryProject(client, projectId)
+    print(f"Retrieved project from database: {project}")  # Debug log
+    client.close()
+
+    if not project:
+        return jsonify({'message': 'Project not found'}), 404
+
+    hwSets = project.get('hwSets', {})
+    print(f"Hardware sets before conversion: {hwSets}")  # Debug log
+
+    # Modified conversion logic
+    converted_hwsets = {}
+    for set_name, set_data in hwSets.items():
+        converted_hwsets[set_name] = {
+            'availability': int(set_data['availability']['$numberInt']) if isinstance(set_data['availability'], dict) else int(set_data['availability']),
+            'capacity': int(set_data['capacity']['$numberInt']) if isinstance(set_data['capacity'], dict) else int(set_data['capacity'])
+        }
+
+    print(f"Converted hardware sets: {converted_hwsets}")  # Debug log
+
+    return jsonify({'hwSets': converted_hwsets}), 200
 # Route for adding a new user
 @app.route('/add_user', methods=['POST'])
 def add_user():
@@ -180,7 +209,7 @@ def check_out():
 
     # Return a JSON response
     if success:
-        return jsonify({'message': 'CHECK OUT SUCCESS'}), 200  
+        return jsonify({'message': 'CHECK OUT SUCCESS'}), 200
     else:
         return jsonify({'message': 'CHECK OUT FAIL'}), 400
 
@@ -207,10 +236,10 @@ def check_in():
 
     # Return a JSON response
     if success:
-        return jsonify({'message': 'CHECK IN SUCCESS'}), 200  
+        return jsonify({'message': 'CHECK IN SUCCESS'}), 200
     else:
         return jsonify({'message': 'CHECK IN FAIL'}), 400
-    
+
 
 logging.basicConfig(level=logging.INFO)
 

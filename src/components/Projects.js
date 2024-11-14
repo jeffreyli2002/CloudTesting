@@ -30,6 +30,7 @@ const Projects = () => {
                 const fetchedProjects = response.data.joiningPJ.map((projectName) => ({
                     name: projectName,
                     isJoined: true,
+                    projectId: projectName  // Add this line (assuming projectName is the same as projectId)
                 }));
                 setProjects(fetchedProjects);
             } else {
@@ -104,7 +105,12 @@ const Projects = () => {
                 }}
             >
                 {projects.map((project, index) => (
-                    <ProjectNames key={index} projectName={project.name} isJoined={project.isJoined} />
+                    <ProjectNames
+                        key={index}
+                        projectName={project.name}
+                        isJoined={project.isJoined}
+                        projectId={project.projectId}  // Add this line
+                    />
                 ))}
             </div>
 

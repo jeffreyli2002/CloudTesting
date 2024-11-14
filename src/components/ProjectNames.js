@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import HWSets from './HWSets';
 import { Button } from '@mui/material';
 
-const ProjectNames = ({ projectName, isJoined }) => {
+const ProjectNames = ({ projectName, isJoined, projectId }) => {
     const [joined, setJoined] = useState(isJoined);
 
     const toggleJoin = () => setJoined(!joined);
@@ -18,8 +18,8 @@ const ProjectNames = ({ projectName, isJoined }) => {
             >
                 {joined ? 'Leave' : 'Join'}
             </Button>
-            <HWSets hwName="Hardware Set 1" />
-            <HWSets hwName="Hardware Set 2" />
+            <HWSets hwName="Hardware Set 1" projectId={projectId} />
+            <HWSets hwName="Hardware Set 2" projectId={projectId} />
         </div>
     );
 };
