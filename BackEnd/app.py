@@ -137,27 +137,24 @@ def join():
 # Route for creating a new project
 @app.route('/create_project', methods=['POST'])
 def create_project():
-    # Extract data from request
     data = request.get_json()
     userId = data.get('userId')
     projectName = data.get('projectName')
     projectId = data.get('projectId')
     description = data.get('description')
 
-    # Connect to MongoDB
     client = MongoClient(MONGODB_SERVER)
-
-    # Attempt to create the project using the projectsDB module
-    success = projectsDB.createProject(client, userId, projectName, projectId, description)
-
-    # Close the MongoDB connection
+    success, message = projectsDB.createProject(client, userId, projectName, projectId, description)
     client.close()
 
-    # Return a JSON response
     if success:
-        return jsonify({'message': 'Project created successfully.'}), 200  # Created
+        app.logger.info(f'Project {projectId} created successfully.')
+        return jsonify({'message': 'Project created successfully.'}), 200  # OK
     else:
-        return jsonify({'message': 'Project creation failed. Project ID may already exist.'}), 400  
+        app.logger.error(f'Failed to create project {projectId}: {message}')
+        return jsonify({'message': 'Project creation failed. ' + message}), 400  # Bad Request
+
+
 
 # Route for getting project information
 @app.route('/get_project_info', methods=['GET'])

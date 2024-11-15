@@ -9,6 +9,7 @@ const Projects = () => {
     const [projects, setProjects] = useState([]);
     const [newProjectName, setNewProjectName] = useState('');
     const [newProjectId, setNewProjectId] = useState('');
+    const [newProjectDescription, setNewProjectDescription] = useState(''); // New state for project description
     const [joinProjectId, setJoinProjectId] = useState(''); // New state for joining a project
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -43,8 +44,8 @@ const Projects = () => {
     };
 
     const addProject = async () => {
-        if (newProjectName.trim() === '' || newProjectId.trim() === '') {
-            setError('Please enter both a project name and project ID.');
+        if (newProjectName.trim() === '' || newProjectId.trim() === '' || newProjectDescription.trim() === '') {
+            setError('Please enter project name, project ID, and project description.');
             return;
         }
         const userId = sessionStorage.getItem('userId');
@@ -58,7 +59,7 @@ const Projects = () => {
                 userId: userId,
                 projectName: newProjectName,
                 projectId: newProjectId,
-                description: 'Some project description'
+                description: newProjectDescription
             });
             if (projectResponse.status === 200) {
                 const userResponse = await axios.post('http://localhost:5000/join', {
@@ -68,16 +69,23 @@ const Projects = () => {
                 if (userResponse.status === 200) {
                     setNewProjectName('');
                     setNewProjectId('');
+                    setNewProjectDescription('');
                     fetchUserProjects();
                 } else {
                     setError(userResponse.data.message);
+                    console.error('User join error:', userResponse.data.message); // Log the error
                 }
+            } else {
+                setError('Project creation failed: ' + projectResponse.data.message);
+                console.error('Project creation error:', projectResponse.data.message); // Log the error
             }
         } catch (error) {
             setError('Failed to create project or update user access. Please try again.');
+            console.error('Axios error:', error); // Log the error
         }
         setLoading(false);
     };
+    
 
     const joinProject = async () => {
         if (joinProjectId.trim() === '') {
@@ -127,6 +135,7 @@ const Projects = () => {
             <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <TextField label="New Project Name" variant="outlined" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} fullWidth />
                 <TextField label="New Project ID" variant="outlined" value={newProjectId} onChange={(e) => setNewProjectId(e.target.value)} fullWidth />
+                <TextField label="New Project Description" variant="outlined" value={newProjectDescription} onChange={(e) => setNewProjectDescription(e.target.value)} fullWidth /> {/* New description input */}
                 <Button variant="contained" onClick={addProject} color="primary" disabled={loading}>
                     {loading ? 'Adding...' : 'Add Project'}
                 </Button>

@@ -1,4 +1,3 @@
-# Import necessary libraries and modules
 from pymongo import MongoClient
 
 '''
@@ -18,23 +17,19 @@ Project = {
 def queryProject(client, projectId):
     db = client['User_DB']
     projects = db['projects']
-    
     project = projects.find_one({'projectId': projectId})
-    
     return project
 
 # Function to create a new project
-def createProject(client,userId, projectName, projectId, description):
+def createProject(client, userId, projectName, projectId, description):
     db = client['User_DB']
     projects = db['projects']
     users = db['users']
-    
-    # Check if the project already exists
+
     existing_project = projects.find_one({'projectId': projectId})
     if existing_project:
-        return False  # Project already exists
-    
-    # Create the project document with hardware sets
+        return False, 'Project already exists'
+
     project = {
         'projectName': projectName,
         'projectId': projectId,
@@ -44,11 +39,9 @@ def createProject(client,userId, projectName, projectId, description):
             'HWset2': {'capacity': 100, 'availability': 100}
         }
     }
-    
-    # Insert the project into the collection
+
     result = projects.insert_one(project)
     if result.inserted_id:
-        # Add the projectId to the user's joiningPJ array
         users.update_one(
             {'userId': userId},
             {'$addToSet': {'joiningPJ': projectId}}

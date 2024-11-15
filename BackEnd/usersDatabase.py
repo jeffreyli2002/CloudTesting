@@ -1,14 +1,10 @@
 from pymongo import MongoClient
-import logging
-
-
 
 temp = 'User_DB'  # Replace with your actual database name
 
 def encrypt(inputText, N, D):
     reversedText = inputText[::-1]
     encryptedText = ""
-
     for c in reversedText:
         new_0 = chr(ord(c) + N * D)
         if 34 <= ord(new_0) <= 126:
@@ -21,7 +17,6 @@ def encrypt(inputText, N, D):
 def decrypt(encryptedText, N, D):
     reversedText = encryptedText[::-1]
     decryptedText = ""
-
     for c in reversedText:
         new_0 = chr(ord(c) - N * D)
         if 34 <= ord(new_0) <= 126:
@@ -30,7 +25,6 @@ def decrypt(encryptedText, N, D):
             new_1 = chr((ord(new_0) % 127) + 34)
             decryptedText += new_1
     return decryptedText
-
 
 '''
 Structure of User entry:
@@ -86,15 +80,11 @@ def login(client, userId, password):
     encrypted_password = user['password']
     decrypted_password = decrypt(encrypted_password, 3, 2)
     
-    print(f"Decrypted Password: {decrypted_password}, Provided Password: {password}")
-    
     if password == decrypted_password:
         return True, 'Login successful.'
     else:
         return False, 'Incorrect password.'
 
-
-    
 def join_project(client, userId, projectId):
     db = client['User_DB']
     projects = db['projects']
@@ -102,35 +92,27 @@ def join_project(client, userId, projectId):
 
     existing_project = projects.find_one({'projectId': projectId})
     if not existing_project:
-        logging.error('Project ID %s does not exist', projectId)
         return False, 'Project does not exist.'
 
-    logging.info('Checking if project ID %s is already in user ID %s', projectId, userId)
     user = users.find_one({'userId': userId})
-
     if not user:
-        logging.error('User ID %s does not exist', userId)
         return False, 'User does not exist.'
     
     if 'joiningPJ' not in user:
-        logging.info('User ID %s does not have joiningPJ array, initializing it', userId)
         user['joiningPJ'] = []
 
     if projectId in user['joiningPJ']:
-        logging.info('Project ID %s is already in the joiningPJ array of user ID %s', projectId, userId)
         return False, 'Project already added to user joiningPJ.'
     else:
-        logging.info('Adding project ID %s to the joiningPJ array of user ID %s', projectId, userId)
         result = users.update_one(
             {'userId': userId},
             {'$addToSet': {'joiningPJ': projectId}}
         )
         if result.modified_count > 0:
-            logging.info('Project ID %s successfully added to user ID %s', projectId, userId)
             return True, 'Project successfully added to user joiningPJ.'
         else:
-            logging.error('Failed to add project ID %s to user ID %s for an unknown reason', projectId, userId)
             return False, 'Failed to add project to user joiningPJ.'
+
 def get_evetyPRO_user_joining(client, userId):
     try:
         db = client[temp]
@@ -149,7 +131,4 @@ def get_evetyPRO_user_joining(client, userId):
     
     except Exception as e:
         return False, f'An error occurred: {str(e)}'
-
-
-
 
