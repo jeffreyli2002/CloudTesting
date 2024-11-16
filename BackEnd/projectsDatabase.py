@@ -66,7 +66,14 @@ def checkOutHW(client, projectId, hwSetName, qty):
     
     availability = hwSet.get('availability', 0)
     if qty > availability:
-        return False  # Not enough availability
+        checked_out_qty = availability
+        hwSet['availability'] = 0
+        hwSets[hwSetName] = hwSet
+        result = projects.update_one(
+            {'projectId': projectId},
+            {'$set': {'hwSets': hwSets}}
+        )
+        return False  # still update but return an error
     
     # Update availability
     hwSet['availability'] = availability - qty
