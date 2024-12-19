@@ -1,7 +1,8 @@
 # Import necessary libraries and modules
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from pymongo import MongoClient
 from flask_cors import CORS  # Add this line
+import os
 import logging
 # Import custom modules for database interactions
 import usersDatabase as usersDB
@@ -11,7 +12,7 @@ import projectsDatabase as projectsDB
 MONGODB_SERVER = "mongodb+srv://Group11:LjIkXFETwAWP2YxP@cluster0.pg1fa.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
 # Initialize a new Flask web application
-app = Flask(__name__)
+app = Flask(__name__, static_folder='build')
 CORS(app)  # Enable CORS
 
 # Route for user login
@@ -256,7 +257,15 @@ def get_user_projects():
         return jsonify({'joiningPJ': data}), 200
     else:
         return jsonify({'message': data}), 400
+    
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path != "" and os.path.exists(app.static_folder + '/' + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 # Main entry point for the application
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

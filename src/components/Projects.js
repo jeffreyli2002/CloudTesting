@@ -4,8 +4,11 @@ import { Button, TextField, CircularProgress, Snackbar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+// Define the Projects component as a functional component
 const Projects = () => {
-    const navigate = useNavigate();
+    const navigate = useNavigate(); // Use the useNavigate hook for navigation
+
+    // State variables for managing projects and input fields
     const [projects, setProjects] = useState([]);
     const [newProjectName, setNewProjectName] = useState('');
     const [newProjectId, setNewProjectId] = useState('');
@@ -14,10 +17,12 @@ const Projects = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // useEffect hook to fetch user projects when the component mounts
     useEffect(() => {
         fetchUserProjects();
     }, []);
 
+    // Function to fetch user projects from the backend
     const fetchUserProjects = async () => {
         const userId = sessionStorage.getItem('userId');
         if (!userId) {
@@ -43,6 +48,7 @@ const Projects = () => {
         setLoading(false);
     };
 
+    // Function to add a new project
     const addProject = async () => {
         if (newProjectName.trim() === '' || newProjectId.trim() === '' || newProjectDescription.trim() === '') {
             setError('Please enter project name, project ID, and project description.');
@@ -85,8 +91,8 @@ const Projects = () => {
         }
         setLoading(false);
     };
-    
 
+    // Function to join an existing project
     const joinProject = async () => {
         if (joinProjectId.trim() === '') {
             setError('Please enter a project ID to join.');
@@ -115,6 +121,7 @@ const Projects = () => {
         setLoading(false);
     };
 
+    // Function to handle user logout
     const handleLogout = () => {
         sessionStorage.removeItem('userId');
         navigate('/');
@@ -154,4 +161,5 @@ const Projects = () => {
     );
 };
 
+// Export the Projects component so it can be used in other parts of the application
 export default Projects;

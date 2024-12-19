@@ -1,20 +1,28 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 
+// Define the LoginComponent as a functional component
 const LoginComponent = () => {
+    // Use the useNavigate hook from react-router-dom for navigation
     const navigate = useNavigate(); 
+    
+    // Initialize state for login credentials (username and password)
     const [loginCredentials, setLoginCredentials] = useState({ username: '', password: '' });
 
+    // Handle changes in the input fields
     const handleLoginChange = (e) => {
+        // Destructure name and value from the event target (input field)
         const { name, value } = e.target;
+        // Update the state with the new value
         setLoginCredentials(prev => ({ ...prev, [name]: value }));
     };
 
+    // Handle form submission
     const handleLoginSubmit = (e) => {
-        e.preventDefault();
+        e.preventDefault(); // Prevent the default form submission behavior
         console.log('Login Attempted:', loginCredentials);
     
-        // Send POST request to backend
+        // Send POST request to the backend to attempt login
         fetch('http://localhost:5000/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -26,26 +34,29 @@ const LoginComponent = () => {
         .then(response => response.json().then(data => ({ status: response.status, body: data })))
         .then(res => {
             if (res.status === 200) {
-                // Login successful, store userId in session storage
+                // If login is successful, store userId in session storage
                 sessionStorage.setItem('userId', loginCredentials.username);
                 console.log(res.body.message);
+                // Navigate to the projects page
                 navigate('/projects');
             } else {
-                // Login failed
+                // If login fails, alert the user with the error message
                 alert(res.body.message);
             }
         })
         .catch(error => {
+            // Handle any errors that occur during the login process
             console.error('Error during login:', error);
             alert('An error occurred during login.');
         });
     };
     
-
+    // Handle Create Account button click to navigate to the new user page
     const handleCreateAccountClick = () => {
         navigate('/new-user'); 
     };
 
+    // Render the login form
     return (
         <div style={{
             display: 'flex',
@@ -108,7 +119,7 @@ const LoginComponent = () => {
                         border: '1px solid #007bff',
                         backgroundColor: '#fff',
                         color: '#007bff',
-                        cursor: 'pointer'
+                        cursor: 'pointer' 
                     }}>
                         Create Account
                     </button>
@@ -118,4 +129,5 @@ const LoginComponent = () => {
     );
 };
 
+// Export the LoginComponent so it can be imported and used in other parts of the application
 export default LoginComponent;
