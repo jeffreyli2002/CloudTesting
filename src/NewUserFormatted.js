@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 
+// Define the NewUserFormatted component as a functional component
 const NewUserFormatted = () => {
+    // Use the useNavigate hook from react-router-dom for navigation
     const navigate = useNavigate(); 
+    
+    // Initialize state for username and password input values
     const [inputValueUser, setInputValueUser] = useState('');
     const [inputValuePass, setInputValuePass] = useState('');
 
+    // Handle form submission
     const handleSubmit = (e) => {
-        e.preventDefault();
-        // Send POST request to backend
+        e.preventDefault(); // Prevent the default form submission behavior
+        // Send POST request to the backend to create a new user
         fetch('http://localhost:5000/add_user', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -20,31 +25,37 @@ const NewUserFormatted = () => {
         .then(response => response.json().then(data => ({ status: response.status, body: data })))
         .then(res => {
             if (res.status === 200) {
-                // Account creation successful
+                // If account creation is successful
                 alert(res.body.message);
-                navigate('/');
+                navigate('/'); // Navigate to the home page
             } else {
-                // Account creation failed
+                // If account creation fails
                 alert(res.body.message);
             }
         })
         .catch(error => {
+            // Handle any errors that occur during the account creation process
             console.error('Error during account creation:', error);
             alert('An error occurred during account creation.');
         });
     };
 
+    // Handle changes in the username input field
     const handleChangeUser = (e) => {
         setInputValueUser(e.target.value);
     };
+
+    // Handle changes in the password input field
     const handleChangePass = (e) => {
         setInputValuePass(e.target.value);
     };
 
+    // Navigate to the sign-in page
     const signInPage = () => {
         navigate('/'); 
     };
 
+    // Render the sign-up form
     return (
         <div style={{
             display: 'flex',
@@ -111,4 +122,6 @@ const NewUserFormatted = () => {
     )
 }
 
+// Export the NewUserFormatted component so it can be used in other parts of the application
 export default NewUserFormatted;
+
