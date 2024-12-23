@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button, TextField } from '@mui/material';
 import axios from 'axios';
 
@@ -11,21 +11,18 @@ const HWSets = ({ hwName, projectId }) => {
         return `HWset${setNumber}`;
     };
 
-    useEffect(() => {
-        fetchAvailability();
-    }, [projectId]);
-
-    const fetchAvailability = async () => {
+    // Memoize fetchAvailability to prevent unnecessary re-creation
+    const fetchAvailability = useCallback(async () => {
         try {
-            console.log('Fetching availability for project:', projectId);  // Debug log
+            console.log('Fetching availability for project:', projectId); // Debug log
             const response = await axios.get(`http://localhost:5000/get_hardware_availability?projectId=${projectId}`);
-            console.log('Response data:', response.data);  // Debug log
+            console.log('Response data:', response.data); // Debug log
 
             const hwSetKey = getHwSetKey(hwName);
-            console.log('Looking for hardware set:', hwSetKey);  // Debug log
+            console.log('Looking for hardware set:', hwSetKey); // Debug log
 
             const hwSet = response.data.hwSets[hwSetKey];
-            console.log('Found hardware set:', hwSet);  // Debug log
+            console.log('Found hardware set:', hwSet); // Debug log
 
             if (hwSet && hwSet.availability !== undefined) {
                 setAvailability(hwSet.availability);
@@ -37,7 +34,11 @@ const HWSets = ({ hwName, projectId }) => {
             console.error('Error fetching hardware availability:', error);
             setAvailability(0);
         }
-    };
+    }, [projectId, hwName]);
+
+    useEffect(() => {
+        fetchAvailability();
+    }, [fetchAvailability]);
 
     const handleCheckIn = async () => {
         try {
@@ -72,7 +73,6 @@ const HWSets = ({ hwName, projectId }) => {
             alert('Failed to check out hardware.');
         }
     };
-
 
     return (
         <div style={{ marginTop: '10px' }}>
